@@ -850,3 +850,263 @@ export const productUsage: Record<string, ProductUsage> = {
     weeklyPrTrend: generateWeeklyTrend(85, 20, 'down'),
   },
 };
+
+// ─── Action Queue ────────────────────────────────────────────
+
+export type ActionUrgency = 'now' | 'this_week' | 'monitor';
+export type ActionSource = 'gong' | 'pylon' | 'grafana' | 'product' | 'renewal';
+
+export interface Action {
+  id: string;
+  accountId: string;
+  accountName: string;
+  accountLogo: string;
+  urgency: ActionUrgency;
+  title: string;
+  description: string;
+  reason: string;
+  source: ActionSource;
+  signals: { source: ActionSource; detail: string }[];
+  mrr: number;
+  dueDate?: string;
+  completed: boolean;
+  createdAt: string;
+}
+
+export const actions: Action[] = [
+  // ── NOW ────────────────────────────────────────────
+  {
+    id: 'act-001',
+    accountId: 'acc-006',
+    accountName: 'Datadog',
+    accountLogo: 'D',
+    urgency: 'now',
+    title: 'Schedule CTO-to-CTO call with Datadog',
+    description: 'Datadog VP demanded exec-level response within 24 hours during the incident bridge. This is their third outage in 6 weeks. $42k MRR at immediate churn risk.',
+    reason: 'Negative Gong sentiment (-0.82) + 3rd incident + VP escalation + SLA credit demand',
+    source: 'gong',
+    signals: [
+      { source: 'gong', detail: 'Sentiment score: -0.82 — "last straw" mentioned in call' },
+      { source: 'grafana', detail: 'Error rate 2.8% (threshold: 1%), P99 latency 520ms' },
+      { source: 'pylon', detail: 'Urgent ticket: "Reviews timing out on large PRs" — P0 for their team' },
+      { source: 'product', detail: 'Adoption score dropped to 38, PRs reviewed down 45%' },
+    ],
+    mrr: 42000,
+    dueDate: 'Today',
+    completed: false,
+    createdAt: '30 min ago',
+  },
+  {
+    id: 'act-002',
+    accountId: 'acc-006',
+    accountName: 'Datadog',
+    accountLogo: 'D',
+    urgency: 'now',
+    title: 'Prepare SLA credit proposal for Datadog',
+    description: 'VP Priya Shah explicitly asked about SLA credits and contract remediation. Need to prepare a proposal before the CTO call.',
+    reason: 'Direct request during escalation call — blocking renewal conversation',
+    source: 'gong',
+    signals: [
+      { source: 'gong', detail: 'SLA credit demand at 28:00 mark in incident bridge' },
+      { source: 'renewal', detail: 'Renewal in 18 days — cannot let this linger' },
+    ],
+    mrr: 42000,
+    dueDate: 'Today',
+    completed: false,
+    createdAt: '30 min ago',
+  },
+  {
+    id: 'act-003',
+    accountId: 'acc-004',
+    accountName: 'Vercel',
+    accountLogo: 'V',
+    urgency: 'now',
+    title: 'Respond to Vercel urgent webhook ticket',
+    description: 'GitHub Enterprise webhooks failing for ~15% of PRs. Open for 4 hours with no resolution. Emily gave a 2-week ultimatum on the escalation call.',
+    reason: 'Urgent Pylon ticket (4h old) + customer evaluating alternatives',
+    source: 'pylon',
+    signals: [
+      { source: 'pylon', detail: 'Urgent ticket open 4h: "GitHub Enterprise webhook failures"' },
+      { source: 'gong', detail: 'Emily mentioned evaluating alternatives — 2 week deadline' },
+      { source: 'grafana', detail: 'P99 latency at 189ms, uptime dipped to 99.82%' },
+    ],
+    mrr: 31000,
+    dueDate: 'Today',
+    completed: false,
+    createdAt: '4 hours ago',
+  },
+  {
+    id: 'act-004',
+    accountId: 'acc-004',
+    accountName: 'Vercel',
+    accountLogo: 'V',
+    urgency: 'now',
+    title: 'Assign dedicated eng resource to Vercel',
+    description: 'Connection pool rollback is underway but Vercel needs a named engineer they can reach directly. This was promised on the escalation call.',
+    reason: 'Commitment made during Gong call — trust at stake',
+    source: 'gong',
+    signals: [
+      { source: 'gong', detail: 'Promised dedicated eng resource during Mar 9 escalation call' },
+      { source: 'pylon', detail: '2 open tickets both tied to the same root cause' },
+    ],
+    mrr: 31000,
+    dueDate: 'Today',
+    completed: false,
+    createdAt: '6 hours ago',
+  },
+
+  // ── THIS WEEK ──────────────────────────────────────
+  {
+    id: 'act-005',
+    accountId: 'acc-008',
+    accountName: 'Planetscale',
+    accountLogo: 'P',
+    urgency: 'this_week',
+    title: 'Share query optimization results with Planetscale',
+    description: 'DBA team found 3 problematic queries causing 60% of latency. Optimization plan is ready. Sam is waiting for results — need to follow up before he loses confidence.',
+    reason: 'Open Pylon ticket + customer expressed concern about long-term fit',
+    source: 'pylon',
+    signals: [
+      { source: 'pylon', detail: 'Open ticket: "Slow review times on Go codebases" — 3 days old' },
+      { source: 'gong', detail: 'Sam questioned "long-term fit" during last check-in' },
+      { source: 'product', detail: 'Adoption score at 52, PRs reviewed down 17%' },
+    ],
+    mrr: 3200,
+    dueDate: 'Wednesday',
+    completed: false,
+    createdAt: '1 day ago',
+  },
+  {
+    id: 'act-006',
+    accountId: 'acc-010',
+    accountName: 'Clerk',
+    accountLogo: 'C',
+    urgency: 'this_week',
+    title: 'Investigate false positive security findings for Clerk',
+    description: 'Multiple devs reporting CodeRabbit flagging legitimate auth patterns as vulnerabilities. This is eroding developer trust in the tool.',
+    reason: 'High priority Pylon ticket + error rate creeping up',
+    source: 'pylon',
+    signals: [
+      { source: 'pylon', detail: 'High ticket: "False positive security findings" — devs frustrated' },
+      { source: 'grafana', detail: 'Error rate increased to 0.28% from 0.12% baseline' },
+      { source: 'product', detail: 'PRs reviewed down 13%, adoption score at 64' },
+    ],
+    mrr: 7600,
+    dueDate: 'Thursday',
+    completed: false,
+    createdAt: '1 day ago',
+  },
+  {
+    id: 'act-007',
+    accountId: 'acc-010',
+    accountName: 'Clerk',
+    accountLogo: 'C',
+    urgency: 'this_week',
+    title: 'Complete onboarding for Clerk\'s new backend team',
+    description: '5 new backend engineers need CodeRabbit setup, review preferences, and team-specific rules. Good opportunity to deepen adoption.',
+    reason: 'In-progress Pylon ticket — expansion opportunity',
+    source: 'pylon',
+    signals: [
+      { source: 'pylon', detail: 'Onboarding ticket in progress — 5 new engineers' },
+      { source: 'product', detail: 'Only 18/25 seats active — onboarding fills the gap' },
+    ],
+    mrr: 7600,
+    dueDate: 'Friday',
+    completed: false,
+    createdAt: '4 days ago',
+  },
+  {
+    id: 'act-008',
+    accountId: 'acc-001',
+    accountName: 'Stripe',
+    accountLogo: 'S',
+    urgency: 'this_week',
+    title: 'Send enterprise analytics proposal to Stripe',
+    description: 'David expressed interest in the analytics add-on during QBR. Promised to send proposal by Mar 14. Expansion opportunity worth ~$8k/mo.',
+    reason: 'Positive Gong call + explicit expansion interest + deadline approaching',
+    source: 'gong',
+    signals: [
+      { source: 'gong', detail: 'Analytics add-on interest at 34:15 in QBR — "send by Mar 14"' },
+      { source: 'product', detail: 'Health score 97, adoption 92 — perfect expansion candidate' },
+    ],
+    mrr: 24500,
+    dueDate: 'Saturday (Mar 14)',
+    completed: false,
+    createdAt: '3 days ago',
+  },
+  {
+    id: 'act-009',
+    accountId: 'acc-002',
+    accountName: 'Notion',
+    accountLogo: 'N',
+    urgency: 'this_week',
+    title: 'Confirm API integration priority with Notion',
+    description: 'Product team says workspace API integration is feasible (~3 weeks). Need to confirm priority with Notion before adding to Q2 roadmap.',
+    reason: 'Feature request in progress — relationship strengthening opportunity',
+    source: 'gong',
+    signals: [
+      { source: 'gong', detail: 'Notion called us a "key partner" — API integration requested' },
+      { source: 'pylon', detail: 'Feature request ticket in progress with product team' },
+    ],
+    mrr: 18200,
+    dueDate: 'Friday',
+    completed: false,
+    createdAt: '2 days ago',
+  },
+
+  // ── MONITOR ────────────────────────────────────────
+  {
+    id: 'act-010',
+    accountId: 'acc-005',
+    accountName: 'Figma',
+    accountLogo: 'F',
+    urgency: 'monitor',
+    title: 'Watch Figma adoption trend',
+    description: 'Adoption score stable at 82 but PR reviews have been flat for 4 weeks. May indicate plateau in rollout. Consider proactive check-in if no improvement by end of month.',
+    reason: 'Stagnant growth pattern — early warning',
+    source: 'product',
+    signals: [
+      { source: 'product', detail: 'PR reviews flat for 4 weeks — plateau pattern' },
+      { source: 'product', detail: '38/45 seats active — 7 unused seats' },
+    ],
+    mrr: 12600,
+    completed: false,
+    createdAt: '1 week ago',
+  },
+  {
+    id: 'act-011',
+    accountId: 'acc-007',
+    accountName: 'Supabase',
+    accountLogo: 'Su',
+    urgency: 'monitor',
+    title: 'Track Supabase health recovery',
+    description: 'Health score improving from 80 to 85 after last week\'s remediation. Error rate trending down. Keep an eye on it to confirm the fix holds.',
+    reason: 'Recent recovery — needs confirmation',
+    source: 'grafana',
+    signals: [
+      { source: 'grafana', detail: 'Health score up 5pts this week, error rate declining' },
+      { source: 'product', detail: 'Adoption score 78, trending up — good trajectory' },
+    ],
+    mrr: 9800,
+    completed: false,
+    createdAt: '3 days ago',
+  },
+  {
+    id: 'act-012',
+    accountId: 'acc-003',
+    accountName: 'Linear',
+    accountLogo: 'L',
+    urgency: 'monitor',
+    title: 'Linear health fully recovered — consider expansion',
+    description: 'Health score back to 91 after remediation. Strong adoption at 85. Good time to explore expansion into additional teams.',
+    reason: 'Recovered account + high adoption = expansion ready',
+    source: 'product',
+    signals: [
+      { source: 'grafana', detail: 'Health score recovered from 85 to 91' },
+      { source: 'product', detail: 'Adoption 85, 28/35 seats — room to grow' },
+    ],
+    mrr: 8400,
+    completed: false,
+    createdAt: '3 days ago',
+  },
+];
