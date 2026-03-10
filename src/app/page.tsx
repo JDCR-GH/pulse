@@ -8,7 +8,8 @@ import HealthTrendChart from '@/components/HealthTrendChart';
 import HealthDistribution from '@/components/HealthDistribution';
 import RiskRadar from '@/components/RiskRadar';
 import SlackDigestPreview from '@/components/SlackDigestPreview';
-import { accounts, overviewStats } from '@/data/mock';
+import ActionQueue from '@/components/ActionQueue';
+import { accounts, actions, overviewStats } from '@/data/mock';
 import {
   Heart,
   DollarSign,
@@ -145,9 +146,14 @@ export default function Home() {
             />
           </div>
 
-          {/* Risk Radar + AI Digest Preview */}
+          {/* Action Queue (compact) + Risk Radar */}
           <div className="grid grid-cols-2 gap-4 mb-6">
+            <ActionQueue actions={actions} compact />
             <RiskRadar accounts={accounts} />
+          </div>
+
+          {/* AI Digest Preview */}
+          <div className="mb-6">
             <SlackDigestPreview
               accountName="Vercel"
               channelName="#acc-vercel"

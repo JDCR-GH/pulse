@@ -7,7 +7,7 @@ import {
   Bell,
   Settings,
   Activity,
-  BarChart3,
+  Zap,
   Plug,
   HelpCircle,
   Radar,
@@ -16,9 +16,9 @@ import {
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Overview', href: '/' },
+  { icon: Zap, label: 'Actions', href: '/actions', badge: 4 },
   { icon: Radar, label: 'Risk Radar', href: '/#risk' },
   { icon: Users, label: 'Accounts', href: '/#accounts' },
-  { icon: Activity, label: 'Metrics', href: '/#metrics' },
   { icon: Sparkles, label: 'AI Digests', href: '/#digests' },
   { icon: Bell, label: 'Alerts', href: '/#alerts', badge: 3 },
   { icon: Plug, label: 'Integrations', href: '/settings' },
