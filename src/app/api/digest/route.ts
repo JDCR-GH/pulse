@@ -18,8 +18,14 @@ import { ensureChannel, getChannelHistory, postAccountDigest } from '@/lib/slack
 import { generateDigest } from '@/lib/synthesize';
 
 export async function POST(req: NextRequest) {
+  let body;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  try {
     const { accountSlug, dryRun = false } = body;
 
     if (!accountSlug) {
@@ -40,10 +46,11 @@ export async function POST(req: NextRequest) {
       getAccountTicketStats(account.pylonAccountName),
     ]);
 
-    // 2. Get Slack channel context
+    // 2. Get Slack channel context (resolve channel once, reuse below)
     let slackContext = '';
+    let channelId: string | null = null;
     if (!dryRun) {
-      const channelId = await ensureChannel(account.slackChannel);
+      channelId = await ensureChannel(account.slackChannel);
       if (channelId) {
         const history = await getChannelHistory(channelId, 20);
         slackContext = history
@@ -98,23 +105,20 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Pulse] Generated ${sections.length} sections for ${account.name}`);
 
-    // 5. Post to Slack (unless dry run)
-    if (!dryRun) {
-      const channelId = await ensureChannel(account.slackChannel);
-      if (channelId) {
-        const posted = await postAccountDigest(
-          channelId,
-          account.name,
-          sections.map((s) => ({
-            title: s.title,
-            emoji: s.emoji,
-            content: s.content,
-          }))
-        );
-        console.log(`[Pulse] Posted to #${account.slackChannel}: ${posted}`);
-      } else {
-        console.warn(`[Pulse] Could not find/create channel #${account.slackChannel}`);
-      }
+    // 5. Post to Slack (unless dry run) — reuse channelId from step 2
+    if (!dryRun && channelId) {
+      const posted = await postAccountDigest(
+        channelId,
+        account.name,
+        sections.map((s) => ({
+          title: s.title,
+          emoji: s.emoji,
+          content: s.content,
+        }))
+      );
+      console.log(`[Pulse] Posted to #${account.slackChannel}: ${posted}`);
+    } else if (!dryRun) {
+      console.warn(`[Pulse] Could not find/create channel #${account.slackChannel}`);
     }
 
     return NextResponse.json({
@@ -126,7 +130,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('[Pulse] Digest generation failed:', err);
     return NextResponse.json(
-      { error: 'Internal server error', details: String(err) },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

@@ -29,7 +29,9 @@ function getAdoptionColor(score: number): string {
 }
 
 export default function ProductUsageCard({ usage }: ProductUsageCardProps) {
-  const prChange = ((usage.prsReviewedLast30d - usage.prsReviewedPrev30d) / usage.prsReviewedPrev30d) * 100;
+  const prChange = usage.prsReviewedPrev30d > 0
+    ? ((usage.prsReviewedLast30d - usage.prsReviewedPrev30d) / usage.prsReviewedPrev30d) * 100
+    : 0;
   const seatUtil = (usage.activeUsers / usage.totalSeats) * 100;
   const adoptionColor = getAdoptionColor(usage.adoptionScore);
   const seatColor = seatUtil >= 70 ? '#10b981' : seatUtil >= 40 ? '#f59e0b' : '#ef4444';

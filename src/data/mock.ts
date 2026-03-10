@@ -26,12 +26,22 @@ export interface Account {
   latencyHistory: SparklinePoint[];
 }
 
-function generateSparkline(base: number, variance: number, trend: 'up' | 'down' | 'stable' = 'stable', points = 24): SparklinePoint[] {
+// Seeded PRNG to avoid SSR hydration mismatches
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function generateSparkline(base: number, variance: number, trend: 'up' | 'down' | 'stable' = 'stable', points = 24, seed = 42): SparklinePoint[] {
+  const rand = seededRandom(seed + base * 100 + variance * 10);
   const data: SparklinePoint[] = [];
   let value = base;
   for (let i = 0; i < points; i++) {
     const trendDelta = trend === 'up' ? 0.3 : trend === 'down' ? -0.3 : 0;
-    value = Math.max(0, Math.min(100, value + (Math.random() - 0.5) * variance + trendDelta));
+    value = Math.max(0, Math.min(100, value + (rand() - 0.5) * variance + trendDelta));
     data.push({
       time: `${String(i).padStart(2, '0')}:00`,
       value: Math.round(value * 10) / 10,
@@ -40,11 +50,12 @@ function generateSparkline(base: number, variance: number, trend: 'up' | 'down' 
   return data;
 }
 
-function generateLatencySparkline(base: number, variance: number, points = 24): SparklinePoint[] {
+function generateLatencySparkline(base: number, variance: number, points = 24, seed = 42): SparklinePoint[] {
+  const rand = seededRandom(seed + base * 100 + variance * 10);
   const data: SparklinePoint[] = [];
   let value = base;
   for (let i = 0; i < points; i++) {
-    value = Math.max(10, value + (Math.random() - 0.5) * variance);
+    value = Math.max(10, value + (rand() - 0.5) * variance);
     data.push({
       time: `${String(i).padStart(2, '0')}:00`,
       value: Math.round(value),
@@ -746,11 +757,12 @@ export interface ProductUsage {
 }
 
 function generateWeeklyTrend(base: number, variance: number, trend: 'up' | 'down' | 'stable' = 'stable'): SparklinePoint[] {
+  const rand = seededRandom(base * 77 + variance * 13);
   const data: SparklinePoint[] = [];
   let value = base;
   for (let i = 0; i < 12; i++) {
     const trendDelta = trend === 'up' ? base * 0.02 : trend === 'down' ? -base * 0.02 : 0;
-    value = Math.max(0, value + (Math.random() - 0.5) * variance + trendDelta);
+    value = Math.max(0, value + (rand() - 0.5) * variance + trendDelta);
     data.push({ time: `W${i + 1}`, value: Math.round(value) });
   }
   return data;

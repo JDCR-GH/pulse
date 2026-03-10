@@ -29,21 +29,33 @@ function authHeader(): string {
 }
 
 async function gongFetch(endpoint: string, body?: object) {
-  const res = await fetch(`${GONG_BASE_URL}${endpoint}`, {
-    method: body ? 'POST' : 'GET',
-    headers: {
-      Authorization: authHeader(),
-      'Content-Type': 'application/json',
-    },
-    ...(body && { body: JSON.stringify(body) }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-  if (!res.ok) {
-    console.error(`Gong API error: ${res.status} ${await res.text()}`);
+  try {
+    const res = await fetch(`${GONG_BASE_URL}${endpoint}`, {
+      method: body ? 'POST' : 'GET',
+      headers: {
+        Authorization: authHeader(),
+        'Content-Type': 'application/json',
+      },
+      ...(body && { body: JSON.stringify(body) }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      console.error(`Gong API error: ${res.status} ${await res.text()}`);
+      return null;
+    }
+
+    return res.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    console.error(`Gong API request failed for ${endpoint}:`, err);
     return null;
   }
-
-  return res.json();
 }
 
 /**

@@ -77,7 +77,11 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 mt-4 space-y-0.5">
         {navItems.map((item) => {
-          const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href.replace('#', ''));
+          const isActive = item.href === '/'
+            ? pathname === '/'
+            : item.href.includes('#')
+              ? pathname === '/'
+              : pathname.startsWith(item.href);
 
           return (
             <button

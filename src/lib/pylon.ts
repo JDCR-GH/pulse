@@ -64,15 +64,28 @@ export async function getAccountTickets(
     const fromDate = new Date();
     fromDate.setDate(fromDate.getDate() - lookbackDays);
 
-    const data = await pylonFetch('/issues', {
-      account_name: accountName,
-      created_after: fromDate.toISOString(),
-      limit: '50',
-    });
+    // Paginate through all results
+    const allIssues: typeof Array.prototype = [];
+    let cursor: string | undefined;
 
-    if (!data?.issues) return [];
+    do {
+      const params: Record<string, string> = {
+        account_name: accountName,
+        created_after: fromDate.toISOString(),
+        limit: '50',
+      };
+      if (cursor) params.cursor = cursor;
 
-    return data.issues.map(
+      const data = await pylonFetch('/issues', params);
+      if (!data?.issues) break;
+
+      allIssues.push(...data.issues);
+      cursor = data.pagination?.has_next_page ? data.pagination.cursor : undefined;
+    } while (cursor);
+
+    if (allIssues.length === 0) return [];
+
+    return allIssues.map(
       (issue: {
         id: string;
         title: string;

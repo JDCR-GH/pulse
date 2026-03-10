@@ -65,7 +65,9 @@ function generateDigest(accountName: string, account: typeof accounts[0], calls:
 
   // Product usage
   if (usage) {
-    const prChange = ((usage.prsReviewedLast30d - usage.prsReviewedPrev30d) / usage.prsReviewedPrev30d * 100);
+    const prChange = usage.prsReviewedPrev30d > 0
+      ? ((usage.prsReviewedLast30d - usage.prsReviewedPrev30d) / usage.prsReviewedPrev30d * 100)
+      : 0;
     digest.push({
       section: 'Product Usage',
       icon: '🐰',
@@ -319,10 +321,4 @@ export default function AccountDetail({ params }: { params: Promise<{ id: string
       </main>
     </div>
   );
-}
-
-function getScoreColorLocal(score: number): string {
-  if (score >= 70) return '#10b981';
-  if (score >= 40) return '#f59e0b';
-  return '#ef4444';
 }

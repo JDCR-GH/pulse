@@ -122,8 +122,18 @@ JSON only:`;
     });
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '';
-    const sections: DigestSection[] = JSON.parse(text);
-    return sections;
+    try {
+      const sections: DigestSection[] = JSON.parse(text);
+      return sections;
+    } catch (parseErr) {
+      console.error('Failed to parse digest JSON:', parseErr, 'Raw text:', text.slice(0, 500));
+      // Try to extract JSON from the response
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]) as DigestSection[];
+      }
+      throw new Error('Invalid JSON response from AI');
+    }
   } catch (err) {
     console.error('Failed to generate digest:', err);
     // Return a basic fallback
