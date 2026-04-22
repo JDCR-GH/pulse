@@ -51,7 +51,7 @@ export default function AccountTimeline({ events }: AccountTimelineProps) {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0 rounded-xl p-3"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                  style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
                       style={{ background: `${source.color}12`, color: source.color }}>

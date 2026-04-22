@@ -7,48 +7,122 @@ import AlertsFeed from '@/components/AlertsFeed';
 import HealthTrendChart from '@/components/HealthTrendChart';
 import HealthDistribution from '@/components/HealthDistribution';
 import RiskRadar from '@/components/RiskRadar';
-import SlackDigestPreview from '@/components/SlackDigestPreview';
+import AccountDigest from '@/components/AccountDigest';
 import ActionQueue from '@/components/ActionQueue';
+import PortfolioDonut3D from '@/components/PortfolioDonut3D';
 import { accounts, actions, overviewStats } from '@/data/mock';
-import {
-  Heart,
-  DollarSign,
-  Activity,
-  AlertTriangle,
-  Clock,
-  Search,
-  RefreshCw,
-} from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 
 const sampleDigest = [
   {
     section: 'Health Summary',
-    icon: '📊',
-    content: 'Overall health score is stable at 72. Uptime dipped to 99.82% over the past 6 hours due to connection pool issues. Error rate trending up slightly — engineering is investigating.',
+    source: 'health' as const,
+    severity: 'warning' as const,
+    content: 'Score 72 (warning) · Uptime 99.82% · Error rate trending up — engineering investigating · P99 latency elevated at 320ms',
   },
   {
-    section: 'Recent Call (Gong)',
-    icon: '📞',
-    content: 'Escalation call on Mar 9 — customer expressed frustration with latency spikes affecting production. Mentioned evaluating alternatives if not resolved within 2 weeks. Sentiment: Negative (-0.55).',
+    section: 'Latest Call',
+    source: 'gong' as const,
+    severity: 'critical' as const,
+    content: 'Escalation call Mar 9 — customer expressed frustration with latency spikes affecting production. Mentioned evaluating alternatives if not resolved within 2 weeks · Sentiment: negative (-0.55)',
   },
   {
-    section: 'Support Activity (Pylon)',
-    icon: '🎫',
-    content: '2 open tickets: "GitHub Enterprise webhook failures" (urgent, 4h old) and "Custom review rules not triggering on monorepo" (high, 2 days). Avg response time: 3h 20m.',
+    section: 'Support',
+    source: 'pylon' as const,
+    severity: 'critical' as const,
+    content: '2 open tickets: "GitHub Enterprise webhook failures" (urgent, 4h old) · "Custom review rules not triggering on monorepo" (high, 2 days)',
   },
   {
     section: 'Product Usage',
-    icon: '🐰',
-    content: 'PR reviews down 18% vs last month (1,240 → 1,017). Active users: 45/60 seats (75%). Adoption score: 68 — declining. Top repo activity in "platform-core" and "api-gateway".',
-  },
-  {
-    section: 'Recommended Actions',
-    icon: '⚡',
-    content: '1. Assign dedicated eng resource for latency investigation\n2. Schedule exec sponsor call within 48h\n3. Proactive outreach on the open urgent ticket\n4. Review custom rules config — may need tuning for monorepo setup',
+    source: 'product' as const,
+    severity: 'warning' as const,
+    content: 'PR reviews down 18% vs last month (1,240 → 1,017) · 45/60 active seats (75%) · Adoption score 68 — declining · Top repos: platform-core, api-gateway',
   },
 ];
 
+const sampleActions = [
+  'Assign dedicated eng resource for latency investigation',
+  'Schedule exec sponsor call within 48h',
+  'Proactive outreach on the open urgent ticket',
+  'Review custom rules config — may need tuning for monorepo setup',
+];
+
 export default function Home() {
+  // ── Custom stat card icons ────────────────────────────────────────────────
+  const gaugeC   = 2 * Math.PI * 7;
+  const gaugeFull = gaugeC * 0.75;
+  const gaugeFill = gaugeFull * (overviewStats.avgHealthScore / 100);
+
+  const miniDonutC  = 2 * Math.PI * 6;
+  const healthFrac  = overviewStats.healthyCount / overviewStats.totalAccounts;
+
+  const HealthGaugeIcon = (
+    <svg viewBox="0 0 20 20" width="20" height="20" fill="none">
+      {/* Track — 3/4 arc, gap at bottom */}
+      <circle cx="10" cy="10" r="7"
+        stroke="currentColor" strokeOpacity="0.18" strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeDasharray={`${gaugeFull.toFixed(2)} ${(gaugeC - gaugeFull).toFixed(2)}`}
+        transform="rotate(120 10 10)" />
+      {/* Fill arc */}
+      <circle cx="10" cy="10" r="7"
+        stroke="currentColor" strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeDasharray={`${gaugeFill.toFixed(2)} ${(gaugeC - gaugeFill).toFixed(2)}`}
+        transform="rotate(120 10 10)" />
+      {/* Pivot dot */}
+      <circle cx="10" cy="10" r="1.2" fill="currentColor" opacity="0.45" />
+    </svg>
+  );
+
+  const MrrBarIcon = (
+    <svg viewBox="0 0 20 20" width="20" height="20" fill="none">
+      <rect x="1"  y="13" width="4" height="6"  rx="1" fill="currentColor" opacity="0.28" />
+      <rect x="7"  y="8"  width="4" height="11" rx="1" fill="currentColor" opacity="0.55" />
+      <rect x="13" y="3"  width="4" height="16" rx="1" fill="currentColor" />
+      {/* Trend line overlay */}
+      <polyline points="3,13 9,8 15,3"
+        stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" opacity="0.45" />
+      <circle cx="15" cy="3" r="1.5" fill="currentColor" />
+    </svg>
+  );
+
+  const EkgIcon = (
+    <svg viewBox="0 0 20 20" width="20" height="20" fill="none">
+      <path
+        d="M0,10 L4,10 L5.5,7.5 L7,12.5 L9,2 L11,15.5 L12.5,10 L20,10"
+        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
+  const RadarIcon = (
+    <svg viewBox="0 0 20 20" width="20" height="20" fill="none">
+      <circle cx="10" cy="10" r="9"   stroke="currentColor" strokeWidth="0.75" opacity="0.14" />
+      <circle cx="10" cy="10" r="5.5" stroke="currentColor" strokeWidth="0.75" opacity="0.3"  />
+      <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="0.75" opacity="0.55" />
+      <circle cx="10" cy="10" r="1.4" fill="currentColor" />
+      {/* Sweep arm */}
+      <line x1="10" y1="10" x2="17" y2="4"
+        stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.45" />
+    </svg>
+  );
+
+  const MiniDonutIcon = (
+    <svg viewBox="0 0 20 20" width="20" height="20" fill="none">
+      {/* Background ring */}
+      <circle cx="10" cy="10" r="6"
+        stroke="currentColor" strokeWidth="3" strokeOpacity="0.18" />
+      {/* Healthy arc */}
+      <circle cx="10" cy="10" r="6"
+        stroke="currentColor" strokeWidth="3"
+        strokeLinecap="round"
+        strokeDasharray={`${(miniDonutC * healthFrac).toFixed(2)} ${miniDonutC.toFixed(2)}`}
+        transform="rotate(-90 10 10)" />
+      <circle cx="10" cy="10" r="1.5" fill="currentColor" opacity="0.4" />
+    </svg>
+  );
+  // ─────────────────────────────────────────────────────────────────────────
+
   return (
     <div className="min-h-screen">
       <div className="mesh-bg" />
@@ -58,7 +132,7 @@ export default function Home() {
         {/* Header */}
         <header className="sticky top-0 z-30 px-8 h-16 flex items-center justify-between border-b"
           style={{
-            background: 'rgba(7, 7, 13, 0.8)',
+            background: 'rgba(244, 243, 239, 0.92)',
             backdropFilter: 'blur(16px)',
             borderColor: 'var(--border)',
           }}>
@@ -97,7 +171,7 @@ export default function Home() {
               value={overviewStats.avgHealthScore.toFixed(1)}
               trend="down"
               trendValue="2.1%"
-              icon={<Heart size={20} />}
+              icon={HealthGaugeIcon}
               color="#8b5cf6"
               glowClass="glow-purple"
               delay={50}
@@ -108,7 +182,7 @@ export default function Home() {
               subValue={`${overviewStats.totalAccounts} accounts`}
               trend="up"
               trendValue="4.3%"
-              icon={<DollarSign size={20} />}
+              icon={MrrBarIcon}
               color="#10b981"
               glowClass="glow-green"
               delay={100}
@@ -118,7 +192,7 @@ export default function Home() {
               value={`${overviewStats.avgUptime}%`}
               trend="neutral"
               trendValue="stable"
-              icon={<Activity size={20} />}
+              icon={EkgIcon}
               color="#3b82f6"
               glowClass="glow-blue"
               delay={150}
@@ -129,7 +203,7 @@ export default function Home() {
               subValue="2 critical, 1 warning"
               trend="up"
               trendValue="+1"
-              icon={<AlertTriangle size={20} />}
+              icon={RadarIcon}
               color="#ef4444"
               glowClass="glow-red"
               delay={200}
@@ -140,10 +214,23 @@ export default function Home() {
               subValue={`${((overviewStats.healthyCount / overviewStats.totalAccounts) * 100).toFixed(0)}% of portfolio`}
               trend="down"
               trendValue="-1"
-              icon={<Clock size={20} />}
+              icon={MiniDonutIcon}
               color="#06b6d4"
               delay={250}
             />
+          </div>
+
+          {/* Isometric Account Map */}
+          <div className="glass-card mb-6 overflow-hidden opacity-0 animate-slide-up" style={{ animationDelay: '100ms' }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
+              <div>
+                <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Portfolio Health Map</h2>
+                <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+                  {accounts.filter(a => a.status === 'critical').length} CRITICAL · {accounts.filter(a => a.status === 'warning').length} WARNING · {accounts.filter(a => a.status === 'healthy').length} HEALTHY
+                </p>
+              </div>
+            </div>
+            <PortfolioDonut3D accounts={accounts} />
           </div>
 
           {/* Action Queue (compact) + Risk Radar */}
@@ -154,10 +241,12 @@ export default function Home() {
 
           {/* AI Digest Preview */}
           <div className="mb-6">
-            <SlackDigestPreview
+            <AccountDigest
               accountName="Vercel"
               channelName="#acc-vercel"
+              healthScore={72}
               digest={sampleDigest}
+              actions={sampleActions}
               generatedAt="Today, 9:00 AM"
             />
           </div>

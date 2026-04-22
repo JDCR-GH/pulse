@@ -44,7 +44,7 @@ export default function SlackActivity({ messages }: SlackActivityProps) {
       {channels.map((channel) => (
         <div key={channel}>
           {/* Channel header */}
-          <div className="px-5 py-2 flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.01)' }}>
+          <div className="px-5 py-2 flex items-center gap-2" style={{ background: 'rgba(0,0,0,0.02)' }}>
             <Hash size={12} style={{ color: 'var(--text-muted)' }} />
             <span className="text-[11px] font-semibold" style={{ color: 'var(--text-secondary)' }}>{channel}</span>
           </div>
@@ -87,7 +87,7 @@ export default function SlackActivity({ messages }: SlackActivityProps) {
                       <div className="flex items-center gap-3 mt-2">
                         {msg.reactions?.map((r, j) => (
                           <span key={j} className="text-[11px] px-1.5 py-0.5 rounded-md flex items-center gap-1"
-                            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)' }}>
+                            style={{ background: 'rgba(0,0,0,0.05)', border: '1px solid var(--border)' }}>
                             {r.emoji} <span style={{ color: 'var(--text-muted)' }}>{r.count}</span>
                           </span>
                         ))}

@@ -159,7 +159,7 @@ export default function RiskRadar({ accounts }: RiskRadarProps) {
                     <div className="w-1.5 h-1.5 rounded-full shrink-0"
                       style={{ background: signal.severity === 'high' ? '#ef4444' : signal.severity === 'medium' ? '#f59e0b' : '#3b82f6' }} />
                     <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)' }}>
+                      style={{ background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)' }}>
                       {signal.source}
                     </span>
                     <span style={{ color: 'var(--text-secondary)' }}>{signal.signal}</span>

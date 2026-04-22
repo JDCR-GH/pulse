@@ -15,12 +15,12 @@ export default function ActionsPage() {
     ? actions
     : actions.filter((a) => a.source === sourceFilter);
 
-  const totalMrrAtRisk = actions
+  const totalMrrAtRisk = filtered
     .filter((a) => a.urgency === 'now' && !a.completed)
     .reduce((sum, a) => sum + a.mrr, 0);
 
   const uniqueAccountsMrr = new Map<string, number>();
-  actions.filter(a => a.urgency === 'now' && !a.completed).forEach(a => {
+  filtered.filter(a => a.urgency === 'now' && !a.completed).forEach(a => {
     uniqueAccountsMrr.set(a.accountId, a.mrr);
   });
   const dedupedMrr = Array.from(uniqueAccountsMrr.values()).reduce((s, v) => s + v, 0);
@@ -42,7 +42,7 @@ export default function ActionsPage() {
         {/* Header */}
         <header className="sticky top-0 z-30 px-8 h-16 flex items-center justify-between border-b"
           style={{
-            background: 'rgba(7, 7, 13, 0.8)',
+            background: 'rgba(244, 243, 239, 0.92)',
             backdropFilter: 'blur(16px)',
             borderColor: 'var(--border)',
           }}>
@@ -71,7 +71,7 @@ export default function ActionsPage() {
                 Urgent Actions
               </div>
               <div className="text-2xl font-bold tabular-nums" style={{ color: '#ef4444' }}>
-                {actions.filter((a) => a.urgency === 'now' && !a.completed).length}
+                {filtered.filter((a) => a.urgency === 'now' && !a.completed).length}
               </div>
               <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>need attention today</div>
             </div>
@@ -89,7 +89,7 @@ export default function ActionsPage() {
                 This Week
               </div>
               <div className="text-2xl font-bold tabular-nums" style={{ color: '#f59e0b' }}>
-                {actions.filter((a) => a.urgency === 'this_week' && !a.completed).length}
+                {filtered.filter((a) => a.urgency === 'this_week' && !a.completed).length}
               </div>
               <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>actions pending</div>
             </div>
@@ -98,7 +98,7 @@ export default function ActionsPage() {
                 Monitoring
               </div>
               <div className="text-2xl font-bold tabular-nums" style={{ color: '#3b82f6' }}>
-                {actions.filter((a) => a.urgency === 'monitor').length}
+                {filtered.filter((a) => a.urgency === 'monitor').length}
               </div>
               <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>accounts being watched</div>
             </div>
@@ -114,7 +114,7 @@ export default function ActionsPage() {
                 onClick={() => setSourceFilter(s.key)}
                 className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all"
                 style={{
-                  background: sourceFilter === s.key ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255,255,255,0.03)',
+                  background: sourceFilter === s.key ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0,0,0,0.04)',
                   border: `1px solid ${sourceFilter === s.key ? 'rgba(59, 130, 246, 0.3)' : 'var(--border)'}`,
                   color: sourceFilter === s.key ? '#3b82f6' : 'var(--text-secondary)',
                 }}

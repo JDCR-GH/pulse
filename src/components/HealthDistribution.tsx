@@ -29,7 +29,7 @@ export default function HealthDistribution() {
             <span className="text-[11px] font-medium w-12 text-right tabular-nums" style={{ color: 'var(--text-muted)' }}>
               {d.label}
             </span>
-            <div className="flex-1 h-6 rounded-lg overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)' }}>
+            <div className="flex-1 h-6 rounded-lg overflow-hidden" style={{ background: 'rgba(0,0,0,0.04)' }}>
               <div
                 className="h-full rounded-lg progress-shimmer flex items-center px-2.5 transition-all duration-1000 ease-out"
                 style={{
