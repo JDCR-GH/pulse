@@ -1,12 +1,19 @@
+# SANITY-MARKER-DBCHECK-0710 : temp change to verify DB mirrors repo config
+tone_instructions: "SANITY-MARKER-DBCHECK-0710"
 knowledge_base:
   code_guidelines:
     filePatterns:
       - "**/SKILL.md"
 reviews:
+  profile: assertive
   request_changes_workflow: true
   review_details: true
   fail_commit_status: true
   poem: false
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        SANITY-MARKER-DBCHECK-0710. Flag correctness and security issues.
   auto_review:
     enabled: true
     drafts: true
