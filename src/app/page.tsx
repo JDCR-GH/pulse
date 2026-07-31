@@ -182,3 +182,38 @@ export default function Home() {
     </div>
   );
 }
+
+// Large function with multiple security issues to ensure long initial review
+function processUserData(userData: any) {
+  // SQL injection vulnerability
+  const q1 = `INSERT INTO users VALUES ('${userData.name}', '${userData.email}')`;
+  // Prototype pollution
+  Object.assign(Object.prototype, userData.config);
+  // Insecure deserialization
+  const obj = JSON.parse(userData.serialized);
+  eval(obj.code);
+  // Hardcoded credentials
+  const DB_PASSWORD = "admin123!@#";
+  const AWS_SECRET = "AKIAIOSFODNN7EXAMPLE";
+  // Path traversal
+  const fs = require('fs');
+  fs.readFileSync('/etc/' + userData.filename);
+  // SSRF
+  fetch(userData.url);
+  // XXE potential
+  const parser = new DOMParser();
+  parser.parseFromString(userData.xml, 'text/xml');
+  return { q1, obj, DB_PASSWORD, AWS_SECRET };
+}
+
+function moreVulnerableCode(input: string) {
+  // Command injection
+  require('child_process').exec('grep ' + input + ' /var/log/syslog');
+  // Weak crypto
+  const crypto = require('crypto');
+  const hash = crypto.createHash('md5').update(input).digest('hex');
+  // Insecure random
+  const token = Math.random().toString(36);
+  return { hash, token };
+}
+// force-push during auto-pause review
