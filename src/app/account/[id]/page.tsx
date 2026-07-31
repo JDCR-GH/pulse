@@ -10,7 +10,7 @@ import SlackActivity from '@/components/SlackActivity';
 import PylonTickets from '@/components/PylonTickets';
 import ProductUsageCard from '@/components/ProductUsageCard';
 import AccountTimeline from '@/components/AccountTimeline';
-import SlackDigestPreview from '@/components/SlackDigestPreview';
+import AccountDigest, { DigestEntry } from '@/components/AccountDigest';
 import { accounts, gongCalls, slackMessages, pylonTickets, productUsage, getAccountTimeline, alerts } from '@/data/mock';
 import {
   ArrowLeft,
@@ -33,33 +33,46 @@ function getScoreColor(score: number): string {
   return '#ef4444';
 }
 
-function generateDigest(accountName: string, account: typeof accounts[0], calls: typeof gongCalls[string], tickets: typeof pylonTickets[string], usage: typeof productUsage[string]): { section: string; icon: string; content: string }[] {
-  const digest = [];
+function generateDigest(
+  account: typeof accounts[0],
+  calls: typeof gongCalls[string],
+  tickets: typeof pylonTickets[string],
+  usage: typeof productUsage[string],
+): DigestEntry[] {
+  const digest: DigestEntry[] = [];
 
   // Health summary
+  const healthSeverity = account.healthScore >= 85 ? 'positive' : account.healthScore >= 60 ? 'warning' : 'critical';
   digest.push({
     section: 'Health Summary',
-    icon: '📊',
-    content: `Health score: ${account.healthScore} (${account.status}). Uptime: ${account.uptime}%. Error rate: ${account.errorRate}%. P99 latency: ${account.p99Latency}ms. ${account.lastIncident ? `Last incident: ${account.lastIncident}.` : 'No recent incidents.'}`,
+    source: 'health',
+    severity: healthSeverity,
+    content: `Score ${account.healthScore} (${account.status}) · Uptime ${account.uptime}% · Error rate ${account.errorRate}% · P99 ${account.p99Latency}ms${account.lastIncident ? ` · Last incident: ${account.lastIncident}` : ''}`,
   });
 
   // Gong
   if (calls?.length > 0) {
     const lastCall = calls[0];
+    const gongSeverity = lastCall.sentimentScore < -0.3 ? 'critical' : lastCall.sentimentScore < 0 ? 'warning' : 'positive';
     digest.push({
-      section: 'Latest Call (Gong)',
-      icon: '📞',
-      content: `"${lastCall.title}" on ${lastCall.date} (${lastCall.duration}). Sentiment: ${lastCall.sentiment} (${lastCall.sentimentScore > 0 ? '+' : ''}${lastCall.sentimentScore.toFixed(2)}). ${lastCall.summary.slice(0, 150)}...`,
+      section: 'Latest Call',
+      source: 'gong',
+      severity: gongSeverity,
+      content: `"${lastCall.title}" on ${lastCall.date} (${lastCall.duration}) · Sentiment ${lastCall.sentiment} (${lastCall.sentimentScore > 0 ? '+' : ''}${lastCall.sentimentScore.toFixed(2)}) · ${lastCall.summary.slice(0, 120)}`,
     });
   }
 
   // Pylon
   const openTickets = (tickets || []).filter(t => t.status === 'open' || t.status === 'in_progress');
   if (openTickets.length > 0) {
+    const hasUrgent = openTickets.some(t => t.priority === 'urgent');
+    const hasHigh = openTickets.some(t => t.priority === 'high');
+    const pylonSeverity = hasUrgent ? 'critical' : hasHigh ? 'warning' : 'info';
     digest.push({
-      section: 'Support (Pylon)',
-      icon: '🎫',
-      content: `${openTickets.length} open ticket${openTickets.length > 1 ? 's' : ''}: ${openTickets.map(t => `"${t.title}" (${t.priority})`).join(', ')}`,
+      section: 'Support',
+      source: 'pylon',
+      severity: pylonSeverity,
+      content: `${openTickets.length} open ticket${openTickets.length > 1 ? 's' : ''}: ${openTickets.map(t => `"${t.title}" (${t.priority})`).join(' · ')}`,
     });
   }
 
@@ -68,14 +81,59 @@ function generateDigest(accountName: string, account: typeof accounts[0], calls:
     const prChange = usage.prsReviewedPrev30d > 0
       ? ((usage.prsReviewedLast30d - usage.prsReviewedPrev30d) / usage.prsReviewedPrev30d * 100)
       : 0;
+    const productSeverity = prChange < -10 || usage.adoptionScore < 70 ? 'warning' : prChange > 5 ? 'positive' : 'info';
     digest.push({
       section: 'Product Usage',
-      icon: '🐰',
-      content: `${usage.prsReviewedLast30d.toLocaleString()} PRs reviewed (${prChange >= 0 ? '+' : ''}${prChange.toFixed(0)}% vs prev month). ${usage.activeUsers}/${usage.totalSeats} active seats. Adoption score: ${usage.adoptionScore}. Avg review: ${usage.avgReviewTime}.`,
+      source: 'product',
+      severity: productSeverity,
+      content: `${usage.prsReviewedLast30d.toLocaleString()} PRs reviewed (${prChange >= 0 ? '+' : ''}${prChange.toFixed(0)}% vs prev month) · ${usage.activeUsers}/${usage.totalSeats} active seats · Adoption ${usage.adoptionScore} · Avg review ${usage.avgReviewTime}`,
     });
   }
 
   return digest;
+}
+
+function generateActions(
+  account: typeof accounts[0],
+  calls: typeof gongCalls[string],
+  tickets: typeof pylonTickets[string],
+  usage: typeof productUsage[string],
+): string[] {
+  const result: string[] = [];
+
+  if (account.healthScore < 60) {
+    result.push('Assign dedicated engineering resource to investigate critical health degradation');
+  }
+
+  const lastCall = calls?.[0];
+  if (lastCall && lastCall.sentimentScore < -0.3) {
+    result.push(`Schedule exec sponsor call within 48h — ${lastCall.sentiment} sentiment on last call`);
+  }
+
+  const urgentTickets = (tickets || []).filter(t => t.priority === 'urgent' && (t.status === 'open' || t.status === 'in_progress'));
+  const openTickets = (tickets || []).filter(t => t.status === 'open' || t.status === 'in_progress');
+  if (urgentTickets.length > 0) {
+    result.push(`Proactive outreach on urgent ticket: "${urgentTickets[0].title}"`);
+  } else if (openTickets.length > 0) {
+    result.push(`Follow up on ${openTickets.length} open support ticket${openTickets.length > 1 ? 's' : ''}`);
+  }
+
+  if (usage) {
+    const prChange = usage.prsReviewedPrev30d > 0
+      ? ((usage.prsReviewedLast30d - usage.prsReviewedPrev30d) / usage.prsReviewedPrev30d * 100)
+      : 0;
+    if (prChange < -10) {
+      result.push(`Review product adoption — PR reviews down ${Math.abs(prChange).toFixed(0)}%, consider QBR or enablement session`);
+    } else if (usage.adoptionScore < 70) {
+      result.push('Schedule product enablement session — adoption score below threshold');
+    }
+  }
+
+  if (account.p99Latency > 200) {
+    result.push('Escalate P99 latency to engineering — above SLA threshold');
+  }
+
+  return result.slice(0, 4);
 }
 
 export default function AccountDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -98,7 +156,8 @@ export default function AccountDetail({ params }: { params: Promise<{ id: string
   const timeline = getAccountTimeline(id);
   const accountAlerts = alerts.filter(a => a.accountId === id);
   const scoreColor = getScoreColor(account.healthScore);
-  const digest = generateDigest(account.name, account, calls, tickets, usage);
+  const digest = generateDigest(account, calls, tickets, usage);
+  const accountActions = generateActions(account, calls, tickets, usage);
 
   const tierColors: Record<string, { bg: string; color: string }> = {
     Enterprise: { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' },
@@ -116,7 +175,7 @@ export default function AccountDetail({ params }: { params: Promise<{ id: string
         {/* Header */}
         <header className="sticky top-0 z-30 px-8 h-16 flex items-center justify-between border-b"
           style={{
-            background: 'rgba(7, 7, 13, 0.8)',
+            background: 'rgba(244, 243, 239, 0.92)',
             backdropFilter: 'blur(16px)',
             borderColor: 'var(--border)',
           }}>
@@ -287,10 +346,12 @@ export default function AccountDetail({ params }: { params: Promise<{ id: string
 
           {/* AI Digest Preview */}
           <div className="mb-6">
-            <SlackDigestPreview
+            <AccountDigest
               accountName={account.name}
               channelName={`#acc-${account.name.toLowerCase().replace(/\s+/g, '-')}`}
+              healthScore={account.healthScore}
               digest={digest}
+              actions={accountActions}
               generatedAt="Just now"
             />
           </div>

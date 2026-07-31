@@ -2,7 +2,7 @@
 
 import Sidebar from '@/components/Sidebar';
 import {
-  Activity, Phone, Ticket, Hash, Bot, Sparkles, Users,
+  Activity, Phone, Ticket, Hash, Sparkles, Users,
   Check, X, Clock, ToggleLeft, ToggleRight,
   ChevronDown, Settings,
 } from 'lucide-react';
@@ -57,7 +57,7 @@ export default function SettingsPage() {
 
       <main className="ml-[240px] relative z-10">
         <header className="sticky top-0 z-30 px-8 h-16 flex items-center border-b"
-          style={{ background: 'rgba(7, 7, 13, 0.8)', backdropFilter: 'blur(16px)', borderColor: 'var(--border)' }}>
+          style={{ background: 'rgba(244, 243, 239, 0.92)', backdropFilter: 'blur(16px)', borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-2">
             <Settings size={18} style={{ color: 'var(--text-secondary)' }} />
             <h1 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Settings</h1>
@@ -124,10 +124,10 @@ export default function SettingsPage() {
             </h2>
             <div className="glass-card p-5">
               <div className="flex items-center gap-3 mb-4 pb-4 border-b" style={{ borderColor: 'var(--border)' }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)' }}>
-                  <Bot size={20} style={{ color: 'white' }} />
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/pulse-logo.png" alt="Pulse"
+                  className="w-10 h-10 object-contain shrink-0"
+                  style={{ mixBlendMode: 'multiply' }} />
                 <div>
                   <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Pulse Bot</div>
                   <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Automated account intelligence for your Slack workspace</div>

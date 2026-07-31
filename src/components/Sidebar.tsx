@@ -41,16 +41,12 @@ export default function Sidebar() {
       }}>
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-16 border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm"
-          style={{
-            background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)',
-            color: 'white',
-          }}>
-          P
-        </div>
-        <div>
-          <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>Pulse</div>
-          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>by CodeRabbit CSM</div>
+        <div className="flex items-center gap-0.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/pulse-logo.png" alt="P"
+            className="w-9 h-9 object-contain shrink-0"
+            style={{ mixBlendMode: 'multiply' }} />
+          <span className="font-semibold text-base tracking-tight" style={{ color: 'var(--text-primary)', marginLeft: '-10px' }}>ulse</span>
         </div>
       </div>
 
@@ -63,7 +59,7 @@ export default function Sidebar() {
           { name: 'Slack', connected: true },
         ].map((src) => (
           <div key={src.name} className="px-3 py-1.5 rounded-lg flex items-center gap-2"
-            style={{ background: 'rgba(255,255,255,0.02)' }}>
+            style={{ background: 'rgba(0,0,0,0.03)' }}>
             <div className="w-1.5 h-1.5 rounded-full"
               style={{ background: src.connected ? '#10b981' : '#4a4a62' }} />
             <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>{src.name}</span>
@@ -77,9 +73,10 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 mt-4 space-y-0.5">
         {navItems.map((item) => {
-          const isActive = item.href === '/'
-            ? pathname === '/'
-            : item.href.includes('#')
+          // Hash links are anchor scrolls — never "active"
+          const isActive = item.href.includes('#')
+            ? false
+            : item.href === '/'
               ? pathname === '/'
               : pathname.startsWith(item.href);
 
@@ -87,19 +84,24 @@ export default function Sidebar() {
             <button
               key={item.label}
               onClick={() => router.push(item.href)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 group"
               style={{
-                color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                background: isActive ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                borderLeft: isActive ? '2px solid var(--accent-blue)' : '2px solid transparent',
+                fontWeight: isActive ? 600 : 450,
+                color: isActive ? 'var(--accent-purple)' : 'var(--text-muted)',
+                background: isActive ? 'rgba(124, 58, 237, 0.06)' : 'transparent',
+                borderLeft: isActive ? '2px solid var(--accent-purple)' : '2px solid transparent',
               }}
             >
-              <item.icon size={18} strokeWidth={1.8} />
+              <item.icon
+                size={16}
+                strokeWidth={isActive ? 2.2 : 1.7}
+                style={{ opacity: isActive ? 1 : 0.7 }}
+              />
               <span>{item.label}</span>
               {item.badge && (
                 <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                   style={{
-                    background: 'rgba(239, 68, 68, 0.15)',
+                    background: 'rgba(239, 68, 68, 0.12)',
                     color: '#ef4444',
                   }}>
                   {item.badge}

@@ -105,7 +105,7 @@ export default function PylonTickets({ tickets }: PylonTicketsProps) {
                       {status.label}
                     </span>
                     <span className="text-[10px] font-medium px-1.5 py-0.5 rounded uppercase"
-                      style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text-muted)' }}>
+                      style={{ background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)' }}>
                       {ticket.priority}
                     </span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded"
@@ -130,7 +130,7 @@ export default function PylonTickets({ tickets }: PylonTicketsProps) {
               {isExpanded && (
                 <div className="px-5 pb-4 ml-5 space-y-3" style={{ animation: 'fade-in 0.2s ease-out' }}>
                   <p className="text-xs leading-relaxed rounded-lg p-3"
-                    style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                    style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                     {ticket.summary}
                   </p>
                   <div className="flex items-center gap-4 text-[11px]">

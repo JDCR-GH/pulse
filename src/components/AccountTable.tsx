@@ -84,6 +84,12 @@ export default function AccountTable({ accounts }: AccountTableProps) {
               const tier = tierColors[account.tier];
               const scoreColor = getScoreColor(account.healthScore);
 
+              const rowAccent = account.status === 'critical'
+                ? { borderLeft: '2px solid rgba(239,68,68,0.4)', boxShadow: '-3px 0 16px rgba(239,68,68,0.06)', background: 'rgba(239,68,68,0.015)' }
+                : account.status === 'warning'
+                ? { borderLeft: '2px solid rgba(245,158,11,0.3)', boxShadow: '-3px 0 12px rgba(245,158,11,0.04)', background: 'transparent' }
+                : { borderLeft: '2px solid transparent', boxShadow: 'none', background: 'transparent' };
+
               return (
                 <tr
                   key={account.id}
@@ -93,6 +99,7 @@ export default function AccountTable({ accounts }: AccountTableProps) {
                     borderColor: 'var(--border)',
                     opacity: 0,
                     animation: `fade-in 0.4s ease-out ${300 + i * 50}ms forwards`,
+                    ...rowAccent,
                   }}
                 >
                   {/* Account */}

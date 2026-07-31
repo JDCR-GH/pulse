@@ -112,7 +112,7 @@ export default function GongActivity({ calls }: GongActivityProps) {
                 <div className="px-5 pb-5 space-y-4"
                   style={{ animation: 'fade-in 0.2s ease-out' }}>
                   {/* AI Summary */}
-                  <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                  <div className="rounded-xl p-4" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)' }}>
                     <div className="flex items-center gap-1.5 mb-2">
                       <MessageSquare size={12} style={{ color: 'var(--accent-purple)' }} />
                       <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--accent-purple)' }}>AI Summary</span>
@@ -122,11 +122,11 @@ export default function GongActivity({ calls }: GongActivityProps) {
 
                   {/* Metrics row */}
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                    <div className="rounded-xl p-3" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)' }}>
                       <span className="text-[10px] font-medium uppercase tracking-wider block mb-2" style={{ color: 'var(--text-muted)' }}>Sentiment Score</span>
                       <SentimentBar score={call.sentimentScore} />
                     </div>
-                    <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                    <div className="rounded-xl p-3" style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)' }}>
                       <span className="text-[10px] font-medium uppercase tracking-wider block mb-2" style={{ color: 'var(--text-muted)' }}>Talk Ratio</span>
                       <TalkRatioBar us={call.talkRatio.us} them={call.talkRatio.them} />
                     </div>

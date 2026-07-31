@@ -13,7 +13,7 @@ export default function HealthTrendChart() {
       <div className="p-5">
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={healthTrend} barGap={2}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false} />
             <XAxis
               dataKey="date"
               tick={{ fill: '#4a4a62', fontSize: 11 }}
@@ -27,7 +27,7 @@ export default function HealthTrendChart() {
               width={20}
             />
             <Tooltip
-              cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+              cursor={{ fill: 'rgba(0,0,0,0.03)' }}
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null;
                 return (

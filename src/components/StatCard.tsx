@@ -15,34 +15,54 @@ interface StatCardProps {
   delay?: number;
 }
 
-export default function StatCard({ label, value, subValue, trend, trendValue, icon, color, glowClass = '', delay = 0 }: StatCardProps) {
+export default function StatCard({
+  label, value, subValue, trend, trendValue,
+  icon, color, glowClass = '', delay = 0,
+}: StatCardProps) {
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  const trendColor = trend === 'up' ? '#10b981' : trend === 'down' ? '#ef4444' : 'var(--text-muted)';
+  const trendColor = trend === 'up' ? '#10b981' : trend === 'down' ? '#ef4444' : '#9490B0';
 
   return (
     <div
-      className={`glass-card p-5 opacity-0 animate-slide-up ${glowClass}`}
-      style={{ animationDelay: `${delay}ms` }}
+      className={`glass-card relative overflow-hidden opacity-0 animate-slide-up ${glowClass}`}
+      style={{
+        animationDelay: `${delay}ms`,
+        borderLeft: `3px solid ${color}`,
+        padding: '16px 18px 14px',
+      }}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{ background: `${color}12`, color }}>
-          {icon}
-        </div>
+      {/* Label + trend — top row */}
+      <div className="flex items-center justify-between mb-2.5">
+        <span
+          className="text-[9.5px] font-semibold uppercase tracking-widest"
+          style={{ color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}
+        >
+          {label}
+        </span>
         {trend && trendValue && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium"
-            style={{ background: `${trendColor}12`, color: trendColor }}>
-            <TrendIcon size={12} />
+          <span
+            className="flex items-center gap-0.5 text-[10px] font-semibold"
+            style={{ color: trendColor }}
+          >
+            <TrendIcon size={10} strokeWidth={2.5} />
             {trendValue}
-          </div>
+          </span>
         )}
       </div>
-      <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
+
+      {/* Value — the star */}
+      <div
+        className="text-[28px] font-bold tabular-nums leading-none"
+        style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
+      >
         {value}
       </div>
-      <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>{label}</div>
+
+      {/* Sub value */}
       {subValue && (
-        <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{subValue}</div>
+        <div className="text-[10px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
+          {subValue}
+        </div>
       )}
     </div>
   );

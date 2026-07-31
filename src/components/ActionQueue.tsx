@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Action, ActionUrgency, ActionSource } from '@/data/mock';
 import {
@@ -46,11 +47,16 @@ function ActionCard({ action, compact }: { action: Action; compact?: boolean }) 
   const urgency = urgencyConfig[action.urgency];
   const UrgencyIcon = urgency.icon;
 
+  const isNow = action.urgency === 'now' && !completed;
+
   return (
     <div
-      className="group transition-all duration-300"
+      className="group transition-all duration-300 relative"
       style={{
-        opacity: completed ? 0.5 : 1,
+        opacity: completed ? 0.45 : 1,
+        borderLeft: isNow ? '2px solid rgba(239,68,68,0.5)' : '2px solid transparent',
+        boxShadow: isNow ? '-4px 0 20px rgba(239,68,68,0.08)' : 'none',
+        background: isNow ? 'rgba(239,68,68,0.02)' : 'transparent',
       }}
     >
       <div className="flex items-start gap-3 px-5 py-4">
@@ -73,7 +79,7 @@ function ActionCard({ action, compact }: { action: Action; compact?: boolean }) 
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {/* Account badge */}
                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)' }}>
+                  style={{ background: 'rgba(0,0,0,0.05)', border: '1px solid var(--border)' }}>
                   <div className="w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold"
                     style={{ background: `${urgency.color}15`, color: urgency.color }}>
                     {action.accountLogo}
@@ -137,7 +143,7 @@ function ActionCard({ action, compact }: { action: Action; compact?: boolean }) 
           {/* Expanded: Signals */}
           {expanded && !compact && (
             <div className="mt-3 rounded-xl p-3 space-y-2"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', animation: 'fade-in 0.2s ease-out' }}>
+              style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', animation: 'fade-in 0.2s ease-out' }}>
               <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
                 Why this action?
               </div>
@@ -200,7 +206,7 @@ export default function ActionQueue({ actions, compact = false }: ActionQueuePro
             </span>
           )}
           <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-muted)' }}>
+            style={{ background: 'rgba(0,0,0,0.05)', color: 'var(--text-muted)' }}>
             {totalActive} actions
           </span>
         </div>
@@ -218,8 +224,16 @@ export default function ActionQueue({ actions, compact = false }: ActionQueuePro
           <div key={urgency}>
             {/* Group header */}
             <div className="px-5 py-2.5 flex items-center gap-2 border-b"
-              style={{ background: config.bg, borderColor: 'var(--border)' }}>
-              <Icon size={12} style={{ color: config.color }} />
+              style={{
+                background: config.bg,
+                borderColor: urgency === 'now' ? `rgba(239,68,68,0.15)` : 'var(--border)',
+                boxShadow: urgency === 'now' ? '0 1px 0 rgba(239,68,68,0.08)' : 'none',
+              }}>
+              {urgency === 'now' ? (
+                <span className="w-2 h-2 rounded-full status-dot shrink-0" style={{ background: config.color, color: config.color }} />
+              ) : (
+                <Icon size={12} style={{ color: config.color }} />
+              )}
               <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: config.color }}>
                 {config.label}
               </span>
@@ -231,10 +245,14 @@ export default function ActionQueue({ actions, compact = false }: ActionQueuePro
             {/* Items */}
             <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
               {(compact ? items.slice(0, 3) : items).map((action, i) => (
-                <div key={action.id}
-                  style={{ opacity: 0, animation: `fade-in 0.3s ease-out ${i * 50}ms forwards` }}>
+                <motion.div
+                  key={action.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ease: 'easeOut', duration: 0.25, delay: i * 0.05 }}
+                >
                   <ActionCard action={action} compact={compact} />
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

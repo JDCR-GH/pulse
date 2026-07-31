@@ -148,7 +148,7 @@ export default function ProductUsageCard({ usage }: ProductUsageCardProps) {
           <div className="flex flex-wrap gap-1.5">
             {usage.topRepos.map((repo) => (
               <span key={repo} className="text-[11px] font-mono px-2 py-1 rounded-lg flex items-center gap-1.5"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                 <FolderGit2 size={10} style={{ color: 'var(--text-muted)' }} />
                 {repo}
               </span>
