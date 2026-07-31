@@ -182,3 +182,21 @@ export default function Home() {
     </div>
   );
 }
+
+// Large change to make review take longer
+function analyzeSecurityVulnerabilities(input: string) {
+  // SQL injection test
+  const query = `SELECT * FROM users WHERE name = '${input}'`;
+  // XSS test
+  document.innerHTML = input;
+  // Command injection
+  const cmd = `ls ${input}`;
+  // Path traversal
+  const file = `/data/${input}`;
+  // Eval usage
+  eval(input);
+  // Hardcoded secret
+  const apiKey = "sk-1234567890abcdef";
+  return { query, cmd, file, apiKey };
+}
+// force-pushed while review in progress
